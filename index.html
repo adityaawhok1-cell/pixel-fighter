@@ -1,15 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pixel Fighter - Raka vs Sari</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Pixel Fighter</title>
 <style>
 :root{--bg:#1a1626;--panel:#262038;--line:#3d3458;--acc:#ffcf4a;--txt:#f1ecff;--mut:#9d93bd}
-*{box-sizing:border-box}
+*{box-sizing:border-box; user-select:none; -webkit-user-select:none;}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;padding:16px}
 .wrap{max-width:980px;margin:0 auto}
+
 h1{font-size:22px;margin:0 0 4px}
 h2{font-size:15px;margin:0 0 10px;color:var(--acc);text-transform:uppercase;letter-spacing:.06em}
 p.sub{margin:0 0 16px;color:var(--mut);font-size:14px}
@@ -29,26 +29,26 @@ button.on{background:var(--acc);color:#2a2030;border-color:var(--acc);font-weigh
 .stat span:first-child{width:76px;color:var(--mut)}
 .bar{flex:1;height:10px;background:#1d1830;border-radius:5px;overflow:hidden}
 .bar i{display:block;height:100%;background:linear-gradient(90deg,#ffcf4a,#ff7a4a)}
-#arena{width:100%;height:auto;border-radius:10px;background:#000}
-.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(52px,1fr));gap:6px;margin-top:10px}
-.ctl button{padding:12px 0;font-size:18px;user-select:none;-webkit-user-select:none;touch-action:none}
-.ctl button.cmb{background:#4a2f5c;border-color:#6a4584}
-.opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:14px}
-select{background:#3a3158;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px}
-.hint{font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7}
-.hint b{color:#d9d0f5}
 
-/* ============ CSS TRANSISI LAYAR MENU ============ */
+/* ============ LAYAR MENU & TRANSISI ============ */
 .screen { display: none; animation: fadeIn 0.3s ease; }
 .screen.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.menu-container { display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; height: 70vh; }
+.menu-container { display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; height: 85vh; }
 .menu-btn { font-size: 16px; padding: 12px 24px; width: 220px; text-transform: uppercase; letter-spacing: .05em; }
 
-/* ============ VIRTUAL GAMEPAD ============ */
-#vpad{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:var(--vp-op,.6);
-  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-#vpad[hidden]{display:none}
+/* ============ LAYAR ARENA (FULLSCREEN) ============ */
+body.in-arena { padding: 0; display: flex; justify-content: center; align-items: center; background: #000; overflow: hidden; }
+body.in-arena .wrap { max-width: 100%; width: 100%; height: 100%; margin: 0; }
+#layar-arena { height: 100vh; width: 100vw; position: relative; background: #000; }
+#arena { width: 100%; height: 100%; object-fit: contain; }
+.back-float { position: absolute; top: 16px; left: 16px; background: rgba(38,32,56,.85); color: white; border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px; z-index: 100; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+
+/* Sembunyikan Gamepad di luar Arena */
+body:not(.in-arena) #vpad, body:not(.in-arena) .vp-toggle { display: none !important; }
+
+/* ============ VIRTUAL GAMEPAD CSS ============ */
+#vpad{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:var(--vp-op,.6); touch-action:none;}
 .vp-group{position:absolute;pointer-events:none}
 .vp-dpad{position:absolute;inset:0;border-radius:50%;pointer-events:auto;touch-action:none;
   background:radial-gradient(circle,rgba(8,6,16,.78) 0 62%,rgba(8,6,16,.35) 100%);border:3px solid rgba(0,0,0,.65)}
@@ -82,10 +82,9 @@ select{background:#3a3158;color:var(--txt);border:1px solid var(--line);border-r
   <!-- LAYAR 1: MENU UTAMA -->
   <div id="layar-menu" class="screen active">
     <div class="menu-container">
-      <h1 style="font-size: 36px; color: var(--acc); margin-bottom: 2px;">Pixel Fighter</h1>
+      <h1 style="font-size: 42px; color: var(--acc); margin-bottom: 2px;">Pixel Fighter</h1>
       <p class="sub" style="margin-bottom: 24px;">Raka vs Sari</p>
       <button class="menu-btn on" onclick="navigasi('layar-pilih')">Mulai Bermain</button>
-      <button class="menu-btn" onclick="navigasi('layar-arena')">Mode Latihan</button>
       <button class="menu-btn" onclick="navigasi('layar-opsi')">Opsi</button>
     </div>
   </div>
@@ -111,33 +110,10 @@ select{background:#3a3158;color:var(--txt);border:1px solid var(--line);border-r
     <button class="on" style="width:100%; padding:16px; font-size:18px;" onclick="mulaiPertandingan()">FIGHT!</button>
   </div>
 
-  <!-- LAYAR 3: ARENA BERTARUNG & LATIHAN -->
+  <!-- LAYAR 3: ARENA BERTARUNG (FULLSCREEN) -->
   <div id="layar-arena" class="screen">
-    <button onclick="navigasi('layar-menu')" style="margin-bottom: 12px;">⬅ Berhenti</button>
-    <div class="card" style="padding: 8px;">
-      <div class="opts">
-        <label>P1 <select id="s1"></select></label>
-        <label>P2 <select id="s2"></select></label>
-        <label><input type="checkbox" id="ai" checked> Lawan AI</label>
-        <button id="reset">Ulang</button>
-      </div>
-      <canvas id="arena" width="640" height="300"></canvas>
-      <div class="ctl">
-        <button data-k="jumpL">↖</button><button data-k="jump">⤒</button><button data-k="jumpR">↗</button>
-        <button data-k="left">◀</button><button data-k="down">⤓</button><button data-k="right">▶</button>
-        <button data-k="dashB">⏪</button><button data-k="dashF">⏩</button>
-        <button data-k="block">🛡</button>
-        <button data-k="punch">🤛 Kiri</button><button data-k="punchR">Kanan 🤜</button>
-        <button data-k="kick">🦵 Kiri</button><button data-k="kickR">Kanan 🦵</button>
-        <button data-k="upperB" class="cmb">⤒🤛</button><button data-k="upperRB" class="cmb">⤒🤜</button>
-        <button data-k="lowP" class="cmb">⤓👊</button><button data-k="sweepB" class="cmb">⤓🦵</button>
-      </div>
-      <div class="hint">
-        <b>Gerak</b> A/D atau ←/→ · dash: ketuk arah 2× atau E (kanan) / Q (kiri) · lompat W/↑/Spasi · jongkok S/↓<br>
-        <b>Empat anggota badan</b>: <b>J</b> tangan kiri · <b>K</b> tangan kanan · <b>U</b> kaki kiri · <b>I</b> kaki kanan · <b>L</b> tahan<br>
-        <b>Jurus</b>: ↑ + tangan = <b>Uppercut</b> · ↓ + tangan = pukulan bawah · ↓ + kaki = <b>Sapuan</b>
-      </div>
-    </div>
+    <button class="back-float" onclick="navigasi('layar-menu')">⬅ Berhenti</button>
+    <canvas id="arena" width="640" height="300"></canvas>
   </div>
 
   <!-- LAYAR 4: OPSI -->
@@ -145,7 +121,7 @@ select{background:#3a3158;color:var(--txt);border:1px solid var(--line);border-r
     <button onclick="navigasi('layar-menu')" style="margin-bottom: 12px;">⬅ Kembali</button>
     <div class="card">
       <h2>Pengaturan Gamepad</h2>
-      <p class="sub">Pengaturan Virtual Gamepad (sedang dalam pengembangan).</p>
+      <p class="sub">Tata letak awal (D-Pad Kiri, Aksi Kanan) bisa diubah melalui konfigurasi koding VPAD_CONFIG di bagian bawah file ini.</p>
     </div>
   </div>
 
@@ -166,21 +142,16 @@ function navigasi(targetId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(targetId).classList.add('active');
 
-  if(typeof VPAD !== 'undefined') {
-    if(targetId === 'layar-arena') {
-      VPAD.show(VPAD.config.show === 'auto' ? matchMedia('(pointer:coarse)').matches : !!VPAD.config.show);
-    } else {
-      VPAD.show(false);
-    }
+  if(targetId === 'layar-arena') {
+    document.body.classList.add('in-arena');
+    if(typeof VPAD !== 'undefined') VPAD.show(true);
+  } else {
+    document.body.classList.remove('in-arena');
+    if(typeof VPAD !== 'undefined') VPAD.show(false);
   }
 }
 
-function mulaiPertandingan() {
-  navigasi('layar-arena');
-  startFight();
-}
-
-/* ============ DATA KARAKTER ============ */
+/* ============ DATA KARAKTER & ENGINE SPRITE ============ */
 const CHARS=[
  {name:'Raka', title:'The Crimson Striker', style:'raka', cos:'raka', hair:'#e8352a',skin:'#f6caa2',shirt:'#2f5fd8',accent:'#f4f4fa',pants:'#1c1b2a',shoe:'#f4f4f8',
   eye:'#d02848',glove:'#1e1a26',sleeve:'#2f5fd8',band2:'#d03040',stripe:'#d03040',toe:'#d03040',hp:100,atk:8, def:5,spd:3.2},
@@ -193,14 +164,12 @@ const CHARS=[
  {name:'Arga', style:'mohawk',  hair:'#a64cf0',skin:'#f0c098',shirt:'#1a1a22',accent:'#ff4a8a',pants:'#44445a',shoe:'#ff4a8a',hp:90, atk:11,def:3,spd:3.0},
  {name:'Naga', style:'bandana', hair:'#1f5a3a',skin:'#e8b88a',shirt:'#f0e8d0',accent:'#c0392b',band:'#d83a3a',pants:'#f0e8d0',shoe:'#6a4a2a',hp:105,atk:9,def:6,spd:2.8}
 ];
-const RESERVE=CHARS.splice(2);
 const ANIMS=[['idle','Diam'],['walk','Jalan'],['dash','Dash maju'],['bdash','Dash mundur'],
  ['jump','Lompat atas'],['jumpF','Lompat maju'],['jumpB','Lompat mundur'],['dive','Turun cepat'],['crouch','Jongkok'],
  ['punch','Tangan kiri'],['punch2','Tangan kanan'],['kick','Kaki kiri'],['rkick','Kaki kanan'],['kick2','Tendangan putar'],
  ['upper','Uppercut kiri'],['upperR','Uppercut kanan'],['lpunch','Pukul bawah'],['sweep','Sapuan'],['lunge','Pukul maju'],['airkick','Tendang udara kiri'],['airkickR','Tendang udara kanan'],
  ['block','Tahan'],['hit','Kena'],['launch','Terlempar'],['win','Menang'],['ko','KO']];
 
-/* ============ SPRITE ENGINE ============ */
 function shade(hex,k){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return `rgb(${f(n>>16&255)},${f(n>>8&255)},${f(n&255)})`}
 const mkc=()=>{const c=document.createElement('canvas');c.width=64;c.height=52;return c};
 const spr=mkc(),sil=mkc(),out=mkc();
@@ -391,18 +360,16 @@ function render(ctx,c,x,y,s,face,anim,t){
   ctx.drawImage(out,Math.round(x-32*s),Math.round(y-46*s),64*s,52*s);
 }
 
-/* ============ GALERI ============ */
+/* ============ GALERI & PEMILIHAN KARAKTER ============ */
 let sel=0,anim='idle';
 const gal=document.getElementById('gallery');
 const gcv=CHARS.map((c,i)=>{
   const d=document.createElement('div');d.className='pick';
   const cv=document.createElement('canvas');cv.width=96;cv.height=110;
   d.appendChild(cv);d.appendChild(document.createTextNode(c.name));
-  d.onclick=()=>{sel=i;document.getElementById('s1').value=i;updInfo();startFight()};
+  d.onclick=()=>{sel=i;updInfo();};
   gal.appendChild(d);return {d,cv};
 });
-
-/* ============ PREVIEW ============ */
 const pv=document.getElementById('prev'),pg=pv.getContext('2d');
 const btnBox=document.getElementById('animBtns');
 ANIMS.forEach(a=>{const b=document.createElement('button');b.textContent=a[1];b.dataset.a=a[0];
@@ -415,6 +382,7 @@ function updInfo(){
   const st=[['HP',c.hp,130],['Serangan',c.atk,12],['Pertahanan',c.def,7],['Kecepatan',c.spd,4]];
   document.getElementById('stats').innerHTML=st.map(s=>`<div class="stat"><span>${s[0]}</span><div class="bar"><i style="width:${s[1]/s[2]*100}%"></i></div><span style="width:34px;text-align:right">${s[1]}</span></div>`).join('');
 }
+
 const PER={punch:700,punch2:700,kick:800,rkick:900,kick2:900,lpunch:600,sweep:900,lunge:800,hit:600,ko:1000};
 function drawPreview(now){
   pg.clearRect(0,0,300,300);
@@ -445,22 +413,36 @@ function drawPreview(now){
   render(pg,CHARS[sel],150+dx,GY+dy,S,1,a,t);
 }
 
-/* ============ ARENA ============ */
+/* ============ ARENA & LOGIKA PERTANDINGAN ============ */
 const ac=document.getElementById('arena'),ag=ac.getContext('2d');
 const A={W:640,H:300,gy:262,s:3};
 const bld=[[20,90,50],[80,140,40],[130,70,60],[200,120,50],[270,100,70],[350,150,45],[405,90,60],[475,130,50],[535,80,55],[595,110,50]];
 let p1,p2,now=0,over=0,sparks=[],trail=[],pops=[],combo={n:0,who:null,t:0},ai={until:0,act:'idle',done:false,start:0};
 const keys={left:0,right:0,jump:0,down:0,punch:0,punchR:0,kick:0,kickR:0,block:0,dash:0};
 const lastTap={left:-1e9,right:-1e9};
-const sA=document.getElementById('s1'),sB=document.getElementById('s2');
-CHARS.forEach((c,i)=>{sA.add(new Option(c.name,i));sB.add(new Option(c.name,i))});
-sA.value=0;sB.value=1;
-sA.onchange=()=>{sel=+sA.value;updInfo();startFight()};
-sB.onchange=startFight;
-document.getElementById('reset').onclick=startFight;
+
+/* State Pertandingan */
+let fightState = 'idle'; // idle, countdown, playing, over
+let countdownStart = 0;
 
 const mk=(c,x,face)=>({c,x,y:0,vy:0,vx:0,jvx:0,fast:false,dd:1,tc:0,jug:0,face,hp:c.hp,st:'idle',t0:now,hit:false});
-function startFight(){p1=mk(CHARS[+sA.value],170,1);p2=mk(CHARS[+sB.value],470,-1);over=0;sparks=[];trail=[];pops=[];combo={n:0,who:null,t:0}}
+
+function mulaiPertandingan() {
+  // Pilih P2 (Lawan AI) secara acak agar bervariasi
+  let p2Idx = Math.floor(Math.random() * CHARS.length);
+  if(p2Idx === sel) p2Idx = (p2Idx + 1) % CHARS.length; // Jangan sama dengan P1
+
+  p1 = mk(CHARS[sel], 170, 1);
+  p2 = mk(CHARS[p2Idx], 470, -1);
+  over = 0; sparks=[]; trail=[]; pops=[]; combo={n:0,who:null,t:0};
+  
+  // Mulai hitung mundur
+  fightState = 'countdown';
+  countdownStart = performance.now();
+  
+  navigasi('layar-arena');
+}
+
 const set=(f,s)=>{if(f.st!==s){f.st=s;f.t0=now;f.hit=false}};
 
 const MOVES={
@@ -614,6 +596,7 @@ function tryHit(f,o){
     set(f,'win');
     o.vx=dir*500;
     over=now;
+    fightState = 'over';
     
     setTimeout(() => {
       document.getElementById('teks-menang').innerHTML = f.c.name + "<br><span style='font-size:24px;color:white'>MENANG!</span>";
@@ -624,7 +607,7 @@ function tryHit(f,o){
 
 function aiInput(f,o){
   const inp={left:0,right:0,jump:0,punch:0,punchR:0,kick:0,kickR:0,block:0,down:0,dash:0};
-  if(over||!document.getElementById('ai').checked)return inp;
+  if(fightState !== 'playing') return inp;
   const d=Math.abs(o.x-f.x),dir=o.x>f.x?1:-1,toward=dir>0?'right':'left',away=dir>0?'left':'right';
   if(o.st==='launch'||o.st==='down'||f.st==='launch'||f.st==='down')return inp;
   if(now>ai.until){
@@ -659,14 +642,25 @@ function aiInput(f,o){
 
 function update(dt){
   if(!p1)return;
-  control(p1,over?{}:keys,dt);keys.dash=0;
-  control(p2,aiInput(p2,p1),dt);
+  
+  if (fightState === 'playing') {
+    // Beri kontrol saat pertarungan aktif
+    control(p1, over ? {} : keys, dt);
+    keys.dash = 0;
+    control(p2, aiInput(p2, p1), dt);
+  } else {
+    // Matikan kontrol saat countdown atau game over, hanya jalankan gravitasi
+    physics(p1, dt);
+    physics(p2, dt);
+  }
+
   [[p1,p2],[p2,p1]].forEach(([f,o])=>{
-    tryHit(f,o);
+    if(fightState === 'playing') tryHit(f,o);
     const free=!DUR[f.st]&&f.st!=='ko'&&f.st!=='win'&&f.st!=='launch';
     if(free&&f.y===0)f.face=o.x>=f.x?1:-1;
     f.x=Math.max(40,Math.min(A.W-40,f.x));
   });
+  
   const gap=p2.x-p1.x;
   if(Math.abs(gap)<26&&p1.y===0&&p2.y===0){const push=(26-Math.abs(gap))/2*Math.sign(gap||1);p1.x-=push;p2.x+=push}
   sparks.forEach(s=>{s.l-=dt*(s.d||4);if(s.vx)s.x+=s.vx*dt});sparks=sparks.filter(s=>s.l>0);
@@ -694,17 +688,27 @@ function drawBar(f,x,right){
 }
 function drawArena(){
   const g=ag;g.imageSmoothingEnabled=false;
+  
+  // Penyesuaian agar kanvas merespons ukuran layar miring secara internal
+  if(ac.width !== innerWidth || ac.height !== innerHeight) {
+    ac.width = innerWidth;
+    ac.height = innerHeight;
+    A.W = innerWidth; 
+    A.H = innerHeight;
+    A.gy = A.H - 50; // Tanah
+  }
+
   const gr=g.createLinearGradient(0,0,0,A.gy);gr.addColorStop(0,'#2a1f4a');gr.addColorStop(1,'#7a4a8a');
   g.fillStyle=gr;g.fillRect(0,0,A.W,A.H);
-  g.fillStyle='#1d1536';bld.forEach(b=>g.fillRect(b[0],A.gy-b[1],b[2],b[1]));
-  g.fillStyle='#ffd98a';bld.forEach((b,i)=>{for(let y=A.gy-b[1]+10;y<A.gy-10;y+=18)for(let x=b[0]+6;x<b[0]+b[2]-8;x+=14)if((x*7+y*3+i)%5<2)g.fillRect(x,y,4,6)});
+  g.fillStyle='#1d1536';bld.forEach(b=>g.fillRect(b[0]%(A.W+100),A.gy-b[1],b[2],b[1]));
+  g.fillStyle='#ffd98a';bld.forEach((b,i)=>{for(let y=A.gy-b[1]+10;y<A.gy-10;y+=18)for(let x=b[0]%(A.W+100)+6;x<b[0]%(A.W+100)+b[2]-8;x+=14)if((x*7+y*3+i)%5<2)g.fillRect(x,y,4,6)});
   g.fillStyle='#3a2a52';g.fillRect(0,A.gy,A.W,A.H-A.gy);
   g.fillStyle='#4d3a6b';g.fillRect(0,A.gy,A.W,4);
   g.fillStyle='#2e2142';for(let x=0;x<A.W;x+=64)g.fillRect(x,A.gy+14,32,3);
   
   trail.forEach(s=>{g.globalAlpha=s.l*.35;render(g,s.c,s.x,A.gy+s.y,A.s,s.face,s.an,s.t)});
   g.globalAlpha=1;
-  [p1,p2].sort((a,b)=>a.y-b.y).forEach(drawFighter);
+  if(p1 && p2) [p1,p2].sort((a,b)=>a.y-b.y).forEach(drawFighter);
   sparks.forEach(s=>{
     if(s.k==='dust'){g.fillStyle=`rgba(225,215,245,${(s.l*.8).toFixed(2)})`;g.fillRect(Math.round(s.x),Math.round(s.y-(1-s.l)*18),Math.round(s.z),Math.round(s.z));return}
     const z=Math.round(4+s.l*8);g.fillStyle='#fff';g.fillRect(s.x-z,s.y-2,z*2,4);g.fillRect(s.x-2,s.y-z,4,z*2);
@@ -713,12 +717,37 @@ function drawArena(){
   pops.forEach(p=>{g.globalAlpha=Math.min(1,p.l*1.5);g.font='bold 15px system-ui';g.textAlign='center';
     g.lineWidth=4;g.strokeStyle='#120d1f';g.strokeText(p.t,p.x,p.y);g.fillStyle='#fff';g.fillText(p.t,p.x,p.y)});
   g.globalAlpha=1;
-  drawBar(p1,20,false);drawBar(p2,A.W-270,true);
+  if(p1 && p2) { drawBar(p1,20,false); drawBar(p2,A.W-270,true); }
   
   if(combo.n>=2&&now-combo.t<1600){
     const left=combo.who===p1,x=left?24:A.W-24,txt=combo.n+' HITS';
     g.textAlign=left?'left':'right';g.font='bold '+(24+Math.min(combo.n,8)*3)+'px system-ui';
     g.lineWidth=5;g.strokeStyle='#120d1f';g.strokeText(txt,x,110);g.fillStyle='#ffd34a';g.fillText(txt,x,110);
+  }
+
+  // Visualisasi Teks Hitung Mundur
+  if(fightState === 'countdown') {
+    const elapsed = now - countdownStart;
+    let text = '';
+    if(elapsed < 1000) text = '3';
+    else if(elapsed < 2000) text = '2';
+    else if(elapsed < 3000) text = '1';
+    else if(elapsed < 4000) { 
+      text = 'FIGHT!'; 
+      if(elapsed > 3000 && elapsed < 3033) fightState = 'playing'; // Mulai saat tulisan FIGHT muncul
+    } else {
+      fightState = 'playing';
+    }
+
+    if(text) {
+      g.fillStyle = '#ffd34a'; 
+      g.font = 'bold 72px system-ui'; 
+      g.textAlign = 'center';
+      g.lineWidth = 6; 
+      g.strokeStyle = '#120d1f';
+      g.strokeText(text, A.W / 2, A.H / 2 + 20);
+      g.fillText(text, A.W / 2, A.H / 2 + 20);
+    }
   }
 }
 
@@ -732,27 +761,11 @@ function press(k){
   keys[k]=1;
 }
 addEventListener('keydown',e=>{
-  if(e.target.tagName==='SELECT')return;
   const key=e.key.toLowerCase();
-  if(key==='e'||key==='q'){keys.dash=key==='e'?1:-1;e.preventDefault();return}
   const k=MAP[key];
   if(k){e.repeat?keys[k]=1:press(k);e.preventDefault()}
 });
 addEventListener('keyup',e=>{const k=MAP[e.key.toLowerCase()];if(k)keys[k]=0});
-
-const COMBO={jumpL:['left','jump'],jumpR:['right','jump'],upperB:['jump','punch'],upperRB:['jump','punchR'],lowP:['down','punch'],sweepB:['down','kick']};
-document.querySelectorAll('.ctl button').forEach(b=>{
-  const k=b.dataset.k;
-  b.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    if(k==='dashF')keys.dash=1;
-    else if(k==='dashB')keys.dash=-1;
-    else if(COMBO[k])COMBO[k].forEach(x=>keys[x]=1);
-    else press(k);
-  });
-  const rel=()=>{if(COMBO[k])COMBO[k].forEach(x=>keys[x]=0);else if(keys[k]!==undefined&&k!=='dash')keys[k]=0};
-  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,rel));
-});
 
 /* ============ LOOP ============ */
 let last=0;
@@ -763,32 +776,32 @@ function loop(ts){
   update(dt);drawArena();
   requestAnimationFrame(loop);
 }
-updInfo();startFight();requestAnimationFrame(loop);
+updInfo();requestAnimationFrame(loop);
 
-/* ============ VIRTUAL GAMEPAD ============ */
+/* ============ VIRTUAL GAMEPAD (PENGATURAN AWAL) ============ */
 const VPAD_CONFIG={
-  show:'auto', opacity:.6, vibrate:8, toggleButton:true,
+  show:'auto', opacity:.55, vibrate:10, toggleButton:false, // Hilangkan tombol toggle agar bersih
   dpad:{
-    enabled:true, x:'2.5vmin', y:'3vmin', side:'left', size:'clamp(120px,34vmin,190px)',
+    enabled:true, x:'6vmin', y:'8vmin', side:'left', size:'clamp(130px,36vmin,200px)',
     diagonals:true, deadzone:.22,
     keys:{up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'},
     labels:{up:'▲',down:'▼',left:'◀',right:'▶'}
   },
   buttons:{
-    enabled:true, x:'2.5vmin', y:'3vmin', side:'right', size:'clamp(46px,12.5vmin,74px)', gap:'1.4vmin',
+    enabled:true, x:'6vmin', y:'8vmin', side:'right', size:'clamp(50px,13.5vmin,85px)', gap:'2vmin',
     colors:{
       pink:['#ff7ad8','#c9239a'], gray:['#9a9aa6','#4a4a56'],
       blue:['#6aa8ff','#2457c9'], gold:['#ffe27a','#d19a1a']
     },
+    // Konfigurasi posisi silang untuk jempol kanan
     items:[
-      {label:'J', sub:'Tinju L', key:'j',   color:'pink', col:0, row:0, dy:.55},
-      {label:'K', sub:'Tinju R', key:'k',   color:'pink', col:1, row:0, dy:.25},
-      {label:'E', sub:'Dash →',  key:'e',   color:'pink', col:2, row:0, dy:0},
-      {label:'L', sub:'Block',   key:'l',   color:'gray', col:3, row:0, dy:-.1},
-      {label:'U', sub:'Kaki L',  key:'u',   color:'pink', col:0, row:1, dy:.55},
-      {label:'I', sub:'Kaki R',  key:'i',   color:'pink', col:1, row:1, dy:.25},
-      {label:'Q', sub:'Dash ←',  key:'q',   color:'pink', col:2, row:1, dy:0},
-      {label:'⤒', sub:'Lompat',  key:' ',   color:'gray', col:3, row:1, dy:-.1}
+      {label:'L', sub:'Block',  key:'l', color:'gray', col:0, row:0, dy:0.5},
+      {label:'J', sub:'Tinju L',key:'j', color:'pink', col:1, row:0, dy:0},
+      {label:'K', sub:'Tinju R',key:'k', color:'pink', col:2, row:0, dy:0.5},
+      
+      {label:'⤒', sub:'Lompat', key:' ', color:'gray', col:0, row:1, dy:0.5},
+      {label:'U', sub:'Kaki L', key:'u', color:'pink', col:1, row:1, dy:0},
+      {label:'I', sub:'Kaki R', key:'i', color:'pink', col:2, row:1, dy:0.5}
     ]
   }
 };
@@ -802,7 +815,7 @@ const VPAD=(()=>{
     document.querySelectorAll('#vpad .on').forEach(e=>e.classList.remove('on'))};
   const buzz=cfg=>{if(cfg.vibrate&&navigator.vibrate)navigator.vibrate(cfg.vibrate)};
 
-  let cfg=null,root=null,toggle=null,visible=true;
+  let cfg=null,root=null,visible=true;
 
   function build(){
     if(root)root.remove();
@@ -866,27 +879,14 @@ const VPAD=(()=>{
       root.appendChild(grp);
     }
     document.body.appendChild(root);
-
-    if(!toggle&&cfg.toggleButton){
-      toggle=document.createElement('button');toggle.className='vp-toggle';toggle.textContent='🎮';toggle.title='Tampil/sembunyi gamepad';
-      toggle.onclick=()=>show(!visible);document.body.appendChild(toggle);
-    }
-    if(toggle)toggle.style.display=cfg.toggleButton?'':'none';
-    const auto=cfg.show==='auto'?matchMedia('(pointer:coarse)').matches:!!cfg.show;
-    show(auto);
+    show(false); // Sembunyikan secara default
   }
 
   function show(v){
-    visible=v;if(root)root.hidden=!v;if(toggle)toggle.classList.toggle('on',v);
+    visible=v;if(root)root.hidden=!v;
     if(!v)releaseAll();
-    fit();
   }
-  function fit(){
-    if(!root||root.hidden){document.body.style.paddingBottom='';return}
-    let top=innerHeight;root.querySelectorAll('.vp-group').forEach(g=>{top=Math.min(top,g.getBoundingClientRect().top)});
-    document.body.style.paddingBottom=Math.round(innerHeight-top+16)+'px';
-  }
-  addEventListener('resize',fit);
+
   addEventListener('blur',releaseAll);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll()});
 
