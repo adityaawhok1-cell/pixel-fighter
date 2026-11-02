@@ -1,13 +1,14 @@
-
 name: Build Android APK
 
 on:
-  workflow_dispatch: # Fitur agar kita bisa menekan tombol "Run" manual
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Kode
         uses: actions/checkout@v4
@@ -26,20 +27,15 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Ubah HTML jadi Aplikasi Android
+      - name: Buat Aplikasi
         run: |
-          # Membuat wadah aplikasi
           cordova create app com.adit.pixelfighter "Pixel Fighter"
-          
-          # Memasukkan file index.html milikmu ke dalam aplikasi
           cp index.html app/www/index.html
-          
-          # Membangun file APK
           cd app
           cordova platform add android
           cordova build android
 
-      - name: Upload File APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PixelFighter-App
